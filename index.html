@@ -9,19 +9,14 @@ case "$RAW_ARCH" in
     *) exit 1 ;;
 esac
 
-case "$OS" in
-    linux*) PLATFORM="linux" ;;
-    darwin*) PLATFORM="macos" ;;
-    *) exit 1 ;;
-esac
+[[ "$OS" == linux* ]] && PLATFORM="linux" || { [[ "$OS" == darwin* ]] && PLATFORM="macos" || exit 1; }
 
 FILENAME="gdasher-$PLATFORM-$ARCH"
-DESKTOP_PATH="$HOME/Desktop"
-DOWNLOAD_URL=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep "browser_download_url" | grep "$FILENAME" | cut -d '"' -f 4)
+DOWNLOAD_URL=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep "browser_download_url" | grep "$FILENAME" | cut -d '"' -f 4)
 
-if [ -z "$DOWNLOAD_URL" ]; then
+if [ -n "$DOWNLOAD_URL" ]; then
+    curl -L "$DOWNLOAD_URL" -o "./$FILENAME"
+    chmod +x "./$FILENAME"
+else
     exit 1
 fi
-
-curl -L "$DOWNLOAD_URL" -o "$DESKTOP_PATH/$FILENAME"
-chmod +x "$DESKTOP_PATH/$FILENAME"
